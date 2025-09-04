@@ -4,25 +4,10 @@ pipeline {
     PIP_CACHE = "${env.WORKSPACE}\\.pip-cache"
     BROWSER   = "chrome" // or "firefox"
   }
-  options {
-    timestamps()
-  }
   stages {
     stage('Checkout') {
       steps {
         checkout scm
-      }
-    }
-    stage('Ensure Chrome/Firefox Present') {
-      steps {
-        // If your agent already has Chrome/Firefox installed, you can skip this.
-        // For enterprise machines: preinstall them manually or via tools like winget/choco.
-        powershell '''
-          $chrome = (Get-Command "chrome.exe" -ErrorAction SilentlyContinue) -ne $null
-          if (-not $chrome) {
-            Write-Host "Chrome not found. Please install Chrome or switch to Firefox."
-          }
-        '''
       }
     }
     stage('Setup Python venv') {
@@ -51,6 +36,7 @@ pipeline {
   post {
     always {
       junit testResults: 'reports/junit.xml', allowEmptyResults: true
+      // Remove publishHTML below if you don't have HTML Publisher plugin
       publishHTML (target: [
         reportDir: 'reports',
         reportFiles: 'report.html',
